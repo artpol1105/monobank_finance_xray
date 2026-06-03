@@ -4,92 +4,72 @@ from dotenv import load_dotenv
 from src.api_client import MonoClient
 from src.processor import DataProcessor
 from src.database import SessionLocal, Transaction
+from src.config import mcc_dict
+from datetime import datetime
 
 load_dotenv()
-
-MCC_DICT = mcc_dict = {
-    5912: 'Pharmacies',
-    5122: 'Drugs & Pharmacies',
-    5812: 'Restaurants / Cafes',
-    5814: 'Fast Food',
-    5411: 'Supermarkets / Groceries',
-    5462: 'Bakeries',
-    5499: 'Markets / Specialty Foods',
-    5441: 'Candy / Confectionery',
-    5811: 'Caterers',
-    7832: 'Cinemas',
-    7941: 'Sports / Recreation',
-    5641: 'Children\'s Apparel',
-    5651: 'Family Clothing',
-    5691: 'Apparel Stores',
-    5661: 'Shoe Stores',
-    5697: 'Tailoring / Alterations',
-    5977: 'Cosmetics',
-    5211: 'Building Materials',
-    5942: 'Bookstores',
-    5995: 'Pet Stores',
-    5541: 'Gas Stations',
-    8099: 'Medical Services',
-    5311: 'Department Stores',
-    5200: 'Home Goods',
-    5399: 'Miscellaneous Goods',
-    4812: 'Telecom Equipment / Phones',
-    5300: 'Wholesale',
-    5310: 'Discount Stores',
-    5722: 'Household Appliances',
-    4111: 'Transport / Tickets',
-    4829: 'Money Transfers',
-    4814: 'Telecommunication Services',
-    4112: 'Passenger Railways / Trains',
-    5945: 'Toys, Games & Hobbies',
-    7399: 'Business & Online Services'
-}
-
 
 def run_etl():
     print("Starting ETL Pipeline")
 
     client = MonoClient()
     account_id = os.getenv("MONOBANK_ACCOUNT_ID")
-
-    time_to = int(time.time())
-    time_from = time_to - (30 * 24 * 60 * 60)
-
-    print(f"Fetching transactions from Monobank API")
-    raw_data = client.get_statement(account_id, time_from, time_to)
-
     processor = DataProcessor()
-    df = processor.clean_transactions(raw_data)
 
-    df['category'] = df['mcc'].apply(lambda x: MCC_DICT.get(x, f'Other (Code: {x})'))
+    current_time_to = int(time.time())
+    months_to_fetch = 60
 
-    print(f"Processed {len(df)} transactions. Saving to database")
+    for i in range(months_to_fetch):
+        current_time_from = current_time_to - (30 * 24 * 60 * 60)
 
-    session = SessionLocal()
-    try:
-        new_records_count = 0
-        for _, row in df.iterrows():
-            txn = Transaction(
-                id=row['id'],
-                time=row['time'],
-                description=row['description'],
-                mcc=row['mcc'],
-                amount=row['amount'],
-                balance=row['balance'],
-                cashbackAmount=row['cashbackAmount'],
-                category=row['category']
-            )
-            session.merge(txn)
-            new_records_count += 1
+        date_from = datetime.fromtimestamp(current_time_from).strftime('%Y-%m-%d')
+        date_to = datetime.fromtimestamp(current_time_to).strftime('%Y-%m-%d')
+        print(f"Fetching transactions from Monobank API from {date_from} to {date_to}")
 
-        session.commit()
-        print(f"Successfully synchronized {new_records_count} records with PostgreSQL!")
+        try:
+            raw_data = client.get_statement(account_id, current_time_from, current_time_to)
 
-    except Exception as e:
-        session.rollback()
-        print(f"Error during database save: {e}")
-    finally:
-        session.close()
+            if not raw_data:
+                print("No transactions found in this period.")
+            else:
+                df = processor.clean_transactions(raw_data)
+                df['category'] = df['mcc'].apply(lambda x: mcc_dict.get(x, f'Other (Code: {x})'))
+
+                session = SessionLocal()
+                try:
+                    new_records_count = 0
+                    for _, row in df.iterrows():
+                        txn = Transaction(
+                            id=row['id'],
+                            time=row['time'],
+                            description=row['description'],
+                            mcc=row['mcc'],
+                            amount=row['amount'],
+                            balance=row['balance'],
+                            cashbackAmount=row['cashbackAmount'],
+                            category=row['category']
+                        )
+                        session.merge(txn)
+                        new_records_count += 1
+
+                    session.commit()
+                    print(f"{new_records_count} records saved to PostgreSQL.")
+                except Exception as e:
+                    session.rollback()
+                    print(f"Saving error: {e}")
+                finally:
+                    session.close()
+
+        except Exception as api_err:
+            print(f"API error {api_err}")
+
+        current_time_to = current_time_from
+
+        if i < months_to_fetch - 1:
+            print("Waiting 61 seconds for Monobank API to complete.")
+            time.sleep(61)
+
+    print("\nMassive loading finished")
 
 
 if __name__ == "__main__":
