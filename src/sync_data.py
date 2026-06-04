@@ -17,7 +17,7 @@ def run_etl():
     processor = DataProcessor()
 
     current_time_to = int(time.time())
-    months_to_fetch = 60
+    months_to_fetch = 1
 
     for i in range(months_to_fetch):
         current_time_from = current_time_to - (30 * 24 * 60 * 60)
