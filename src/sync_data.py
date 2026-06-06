@@ -69,7 +69,7 @@ def run_etl():
             print("Waiting 61 seconds for Monobank API to complete.")
             time.sleep(61)
 
-    print("\nMassive loading finished")
+    print("\nLoading finished")
 
 
 if __name__ == "__main__":
