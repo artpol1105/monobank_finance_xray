@@ -10,3 +10,5 @@ __pycache__/
 data/
 *.db
 *.sqlite3
+
+run_sync.bat
