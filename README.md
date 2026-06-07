@@ -25,7 +25,7 @@ I designed the system using a modular architecture to ensure scalability, reliab
 
 ---
 
-## 🚀 Key Results & Analytics
+## Key Results & Analytics
 
 ### 1. Interactive BI Dashboard (Power BI)
 I built a dynamic BI interface to replace standard banking apps. 
@@ -33,7 +33,7 @@ I built a dynamic BI interface to replace standard banking apps.
 * **Spending Heatmap:** A day-and-time cohort matrix highlights routine spending clusters.
 * **Custom Tooltips:** Hovering over the heatmap triggers a hidden Donut chart detailing exact categories for that specific hour.
 
-![Power BI Dashboard](images/PowerBi.png) 
+![PowerBi Dashboard](images/PoweBiDashboard.png)
 
 ### 2. Behavioral Segmentation (K-Means Clustering)
 To move beyond basic categories, I applied **K-Means Clustering** to identify latent spending "personas".
@@ -84,14 +84,14 @@ Monobank_ETL_Pipeline/
 ├── .gitignore                              # Blocks sensitive tokens and large virtual environments
 ├── README.md                               # Project documentation (You are here)
 ├── requirements.txt                        # Python dependencies for easy replication
-├── run_sync.bat                            # Windows execution script for cron/Task Scheduler
+├── run_sync.bat                            # Windows execution script for cron/Task Scheduler - Ignored by Git
 ├── etl_sync.log                            # Auto-generated execution log for the Task Scheduler - Ignored by Git
 └── .env                                    # Environment variables (API tokens, DB credentials) - Ignored by Git
 ```
 
 ---
 
-## 🛠️ Setup & Installation
+## Setup & Installation
 
 **1. Clone the repository:**
 ```bash
