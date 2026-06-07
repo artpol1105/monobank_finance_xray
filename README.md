@@ -25,7 +25,7 @@ I designed the system using a modular architecture to ensure scalability, reliab
 
 ---
 
-## 🚀 Key Results & Analytics
+## Key Results & Analytics
 
 ### 1. Interactive BI Dashboard (Power BI)
 I built a dynamic BI interface to replace standard banking apps. 
