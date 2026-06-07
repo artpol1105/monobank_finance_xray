@@ -33,7 +33,7 @@ I built a dynamic BI interface to replace standard banking apps.
 * **Spending Heatmap:** A day-and-time cohort matrix highlights routine spending clusters.
 * **Custom Tooltips:** Hovering over the heatmap triggers a hidden Donut chart detailing exact categories for that specific hour.
 
-![PowerBi Dashboard](images/PoweBiDashboard.png)
+![PowerBi Dashboard](images/dashboard.png)
 
 ### 2. Behavioral Segmentation (K-Means Clustering)
 To move beyond basic categories, I applied **K-Means Clustering** to identify latent spending "personas".
